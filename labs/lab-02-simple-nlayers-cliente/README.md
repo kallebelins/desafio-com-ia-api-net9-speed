@@ -73,7 +73,7 @@ Lab02.SimpleNLayers/
 ```xml
 <PackageReference Include="Mvp24Hours.WebAPI" Version="9.*" />
 <PackageReference Include="AutoMapper" Version="12.*" />
-<PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
 ```
 
 ## 🔐 Credenciais e Configuração
@@ -114,6 +114,41 @@ docker-compose up -d sqlserver
 | POST | `/api/clientes` | Criar novo cliente |
 | PUT | `/api/clientes/{id}` | Atualizar cliente |
 | DELETE | `/api/clientes/{id}` | Excluir cliente |
+
+## 📚 Swagger
+
+Este laboratório inclui documentação automática da API via Swagger.
+
+### Configuração
+
+**No arquivo `Program.cs`:**
+```csharp
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Lab02 Simple N-Layers - Clientes", Version = "v1" });
+});
+
+// ... resto do código ...
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Lab02 Simple N-Layers v1"));
+}
+```
+
+**No arquivo `.csproj` (projeto WebAPI):**
+```xml
+<PackageReference Include="Swashbuckle.AspNetCore" Version="7.*" />
+```
+
+### Acessar Swagger UI
+
+Após iniciar a aplicação, acesse:
+- **Swagger UI**: `http://localhost:5000/swagger` ou `https://localhost:5001/swagger`
+- **Swagger JSON**: `http://localhost:5000/swagger/v1/swagger.json`
 
 ## ✅ Checklist de Implementação
 
