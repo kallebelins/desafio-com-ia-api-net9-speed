@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Lab08.WebAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53654;http://localhost:53655"
+    }
+  }
+}
