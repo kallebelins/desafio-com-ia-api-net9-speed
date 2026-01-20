@@ -329,6 +329,17 @@ public class OutboxMessage
 5. Event-driven com consistência eventual
 6. Pipeline do Mvp24Hours para orquestração
 
+## 📖 Lições Aprendidas Compartilhadas
+
+Este lab pode utilizar lições aprendidas de outros labs para resolver problemas mais rapidamente. Consulte a pasta `../../learnings/` para acessar documentações de problemas comuns e soluções já implementadas.
+
+**Localização da pasta:** `learnings/` (na raiz do projeto)
+
+**Como usar:**
+- Ao encontrar um problema ou erro, pesquise na pasta `learnings/` por documentações relacionadas
+- As lições aprendidas incluem problemas comuns, soluções e boas práticas
+- Exemplos: configurações de banco de dados, conflitos com frameworks, padrões de implementação
+
 ## 🔗 Ferramentas MCP Utilizadas
 
 ```
