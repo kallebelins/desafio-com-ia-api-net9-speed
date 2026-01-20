@@ -204,16 +204,16 @@ public record ClienteCriadoIntegrationEvent : IIntegrationEvent
 
 ## ✅ Checklist de Implementação
 
-- [ ] Criar estrutura de projetos
-- [ ] Definir eventos de domínio (Domain Events)
-- [ ] Definir eventos de integração (Integration Events)
-- [ ] Implementar DomainEventDispatcher
-- [ ] Implementar IntegrationEventPublisher com RabbitMQ
-- [ ] Criar Service que dispara eventos após operações
-- [ ] Criar HostedService para consumir eventos
-- [ ] Implementar handler de email de boas-vindas
-- [ ] Configurar RabbitMQ no docker-compose
-- [ ] Testar fluxo completo de eventos
+- [x] Criar estrutura de projetos
+- [x] Definir eventos de domínio (Domain Events)
+- [x] Definir eventos de integração (Integration Events)
+- [x] Implementar DomainEventDispatcher
+- [x] Implementar IntegrationEventPublisher com RabbitMQ
+- [x] Criar Service que dispara eventos após operações
+- [x] Criar HostedService para consumir eventos
+- [x] Implementar handler de email de boas-vindas
+- [x] Configurar RabbitMQ no docker-compose
+- [x] Testar fluxo completo de eventos
 
 ## 💡 Conceitos Aprendidos
 
