@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lab10.Domain\Lab10.Domain.csproj" />
+    <ProjectReference Include="..\Lab10.Application\Lab10.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mvp24Hours.Infrastructure.Data.EFCore" Version="9.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.*" />
+    <PackageReference Include="Mvp24Hours.Infrastructure.RabbitMQ" Version="9.*" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.*" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.*" />
+    <!-- SqlClient instrumentation ainda em RC - usar versão prerelease -->
+    <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.14.0-rc.1" />
+  </ItemGroup>
+
+</Project>

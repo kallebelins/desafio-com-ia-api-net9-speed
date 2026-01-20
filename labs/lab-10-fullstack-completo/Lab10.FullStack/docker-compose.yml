@@ -1,0 +1,122 @@
+# Docker Compose para Lab10 Full Stack
+# Execute: docker-compose up -d
+#
+# Este arquivo configura apenas os serviços necessários para o Lab10.
+# Para a infraestrutura completa, use o docker-compose.yml da pasta labs/
+
+services:
+  # ===========================================
+  # API
+  # ===========================================
+  lab10-api:
+    build:
+      context: .
+      dockerfile: src/Lab10.WebAPI/Dockerfile
+    container_name: lab10-api
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - ConnectionStrings__WriteDatabase=Server=sqlserver;Database=Lab10_FullStack;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;
+      - RabbitMQ__HostName=rabbitmq
+      - Redis__ConnectionString=redis:6379
+      - OpenTelemetry__JaegerEndpoint=http://jaeger:4317
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - lab10-network
+
+  # ===========================================
+  # BANCO DE DADOS
+  # ===========================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: lab10-sqlserver
+    hostname: sqlserver
+    environment:
+      SA_PASSWORD: "Lab@Mvp24Hours!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Lab@Mvp24Hours!", "-C", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lab10-network
+
+  # ===========================================
+  # MESSAGE BROKER
+  # ===========================================
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: lab10-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lab10-network
+
+  # ===========================================
+  # CACHE
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: lab10-redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lab10-network
+
+  # ===========================================
+  # OBSERVABILITY - TRACING
+  # ===========================================
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: lab10-jaeger
+    hostname: jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    networks:
+      - lab10-network
+
+volumes:
+  sqlserver_data:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  lab10-network:
+    driver: bridge

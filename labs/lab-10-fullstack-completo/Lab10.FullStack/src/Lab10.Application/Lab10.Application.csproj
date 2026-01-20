@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lab10.Domain\Lab10.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mvp24Hours.Application" Version="9.*" />
+    <PackageReference Include="Mvp24Hours.Infrastructure.Cqrs" Version="9.*" />
+    <PackageReference Include="Mvp24Hours.Infrastructure.Pipe" Version="9.*" />
+    <PackageReference Include="FluentValidation" Version="12.*" />
+    <PackageReference Include="AutoMapper" Version="13.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.*" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.*" />
+  </ItemGroup>
+
+</Project>
