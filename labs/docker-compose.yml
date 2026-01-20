@@ -1,0 +1,160 @@
+# Docker Compose para Série de Laboratórios Mvp24Hours
+# Execute: docker-compose up -d
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # BANCO DE DADOS
+  # ===========================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: labs-sqlserver
+    hostname: sqlserver
+    environment:
+      SA_PASSWORD: "Lab@Mvp24Hours!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Lab@Mvp24Hours!", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - labs-network
+
+  # ===========================================
+  # MESSAGE BROKER
+  # ===========================================
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: labs-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_running"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - labs-network
+
+  # ===========================================
+  # CACHE
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: labs-redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - labs-network
+
+  # ===========================================
+  # OBSERVABILITY - TRACING
+  # ===========================================
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: labs-jaeger
+    hostname: jaeger
+    ports:
+      - "16686:16686"  # UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+      - "14268:14268"  # HTTP Collector
+      - "6831:6831/udp" # Thrift Compact
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    networks:
+      - labs-network
+
+  # ===========================================
+  # OBSERVABILITY - METRICS
+  # ===========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: labs-prometheus
+    hostname: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - labs-network
+
+  # ===========================================
+  # OBSERVABILITY - DASHBOARDS
+  # ===========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: labs-grafana
+    hostname: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - labs-network
+
+  # ===========================================
+  # OBSERVABILITY - LOGS (Seq)
+  # ===========================================
+  seq:
+    image: datalust/seq:latest
+    container_name: labs-seq
+    hostname: seq
+    ports:
+      - "5341:5341"  # Ingestion
+      - "8081:80"    # UI
+    environment:
+      ACCEPT_EULA: "Y"
+    volumes:
+      - seq_data:/data
+    networks:
+      - labs-network
+
+volumes:
+  sqlserver_data:
+  rabbitmq_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  seq_data:
+
+networks:
+  labs-network:
+    driver: bridge

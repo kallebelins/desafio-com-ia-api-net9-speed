@@ -1,0 +1,222 @@
+# Lab 05 - CQRS + Observability com Cadastro de Produto
+
+## 🎯 Objetivo
+Criar uma API REST para cadastro de produtos com **CQRS** e implementar **Observability** completa usando OpenTelemetry, Logging estruturado e Health Checks.
+
+## 📋 Requisito de Negócio
+- **Entidade**: Produto
+- **Campos**: Id, Nome, Descrição, Preço, SKU, Categoria, Ativo
+- **Observabilidade**: Logs, Traces, Métricas e Health Checks
+
+## 🏗️ Arquitetura
+**CQRS + Observability** - Separação de leitura/escrita com monitoramento completo.
+
+```
+Lab05.CQRS.Observability/
+├── Lab05.CQRS.Observability.sln
+├── src/
+│   ├── Lab05.Core/
+│   │   ├── Entities/
+│   │   │   └── Produto.cs
+│   │   └── ValueObjects/
+│   │       └── ProdutoDto.cs
+│   │
+│   ├── Lab05.Application/
+│   │   ├── Commands/
+│   │   │   └── CreateProdutoCommand.cs
+│   │   ├── Queries/
+│   │   │   └── GetProdutoByIdQuery.cs
+│   │   ├── Handlers/
+│   │   │   └── ...
+│   │   ├── Behaviors/
+│   │   │   ├── LoggingBehavior.cs
+│   │   │   ├── ValidationBehavior.cs
+│   │   │   └── TracingBehavior.cs
+│   │   └── Metrics/
+│   │       └── ProdutoMetrics.cs
+│   │
+│   ├── Lab05.Infrastructure/
+│   │   ├── Data/
+│   │   │   └── DataContext.cs
+│   │   └── Observability/
+│   │       ├── OpenTelemetrySetup.cs
+│   │       └── CustomActivitySource.cs
+│   │
+│   └── Lab05.WebAPI/
+│       ├── Program.cs
+│       ├── NLog.config
+│       ├── Controllers/
+│       │   └── ProdutoController.cs
+│       ├── Middlewares/
+│       │   ├── CorrelationIdMiddleware.cs
+│       │   └── ExceptionMiddleware.cs
+│       └── Extensions/
+│           ├── ServiceBuilderExtensions.cs
+│           └── ObservabilityExtensions.cs
+```
+
+## 🔧 Recursos Utilizados
+
+| Recurso | Descrição |
+|---------|-----------|
+| **CQRS** | Commands e Queries separados |
+| **OpenTelemetry** | Tracing distribuído |
+| **NLog** | Logging estruturado |
+| **Prometheus** | Métricas da aplicação |
+| **Health Checks** | Monitoramento de saúde |
+| **Pipeline Behaviors** | Logging e Tracing automáticos |
+
+## 📦 Pacotes NuGet
+
+```xml
+<!-- Observability -->
+<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.*" />
+<PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.*" />
+<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.*" />
+<PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.*" />
+<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.*" />
+<PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.*" />
+
+<!-- Logging -->
+<PackageReference Include="NLog.Web.AspNetCore" Version="5.*" />
+
+<!-- Health Checks -->
+<PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="8.*" />
+<PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.*" />
+```
+
+## 📊 Observability Stack
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Observability                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    │
+│   │   Logging   │    │   Tracing   │    │   Metrics   │    │
+│   │   (NLog)    │    │ (Activity)  │    │   (Meter)   │    │
+│   └──────┬──────┘    └──────┬──────┘    └──────┬──────┘    │
+│          │                  │                  │            │
+│          ▼                  ▼                  ▼            │
+│   ┌───────────┐      ┌───────────┐      ┌───────────┐      │
+│   │  Console  │      │  Jaeger   │      │Prometheus │      │
+│   │  Files    │      │  (OTLP)   │      │  Grafana  │      │
+│   └───────────┘      └───────────┘      └───────────┘      │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 📝 Pipeline Behavior com Logging
+
+```csharp
+public class LoggingBehavior<TRequest, TResponse> 
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : notnull
+{
+    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+
+    public async Task<TResponse> Handle(
+        TRequest request,
+        RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
+    {
+        var requestName = typeof(TRequest).Name;
+        
+        _logger.LogInformation(
+            "Handling {RequestName} {@Request}", 
+            requestName, request);
+
+        var stopwatch = Stopwatch.StartNew();
+        var response = await next();
+        stopwatch.Stop();
+
+        _logger.LogInformation(
+            "Handled {RequestName} in {ElapsedMs}ms", 
+            requestName, stopwatch.ElapsedMilliseconds);
+
+        return response;
+    }
+}
+```
+
+## 📝 Custom Metrics
+
+```csharp
+public class ProdutoMetrics
+{
+    private readonly Counter<long> _produtosCriados;
+    private readonly Histogram<double> _operationDuration;
+
+    public ProdutoMetrics(IMeterFactory meterFactory)
+    {
+        var meter = meterFactory.Create("Lab05.Produtos");
+
+        _produtosCriados = meter.CreateCounter<long>(
+            "produtos_criados_total",
+            description: "Total de produtos criados");
+
+        _operationDuration = meter.CreateHistogram<double>(
+            "produto_operation_duration_seconds",
+            unit: "s",
+            description: "Duração das operações de produto");
+    }
+
+    public void RecordProdutoCriado() => _produtosCriados.Add(1);
+    public void RecordDuration(double seconds) => _operationDuration.Record(seconds);
+}
+```
+
+## ✅ Checklist de Implementação
+
+- [ ] Criar estrutura de projetos CQRS
+- [ ] Configurar OpenTelemetry (Tracing + Metrics)
+- [ ] Configurar NLog para logging estruturado
+- [ ] Implementar CorrelationIdMiddleware
+- [ ] Implementar ExceptionMiddleware
+- [ ] Criar LoggingBehavior
+- [ ] Criar TracingBehavior com ActivitySource
+- [ ] Implementar métricas customizadas
+- [ ] Configurar Health Checks (SQL Server, Memory)
+- [ ] Configurar endpoints (/health, /metrics)
+- [ ] Testar com Jaeger/Prometheus
+
+## 💡 Conceitos Aprendidos
+
+1. Three Pillars of Observability (Logs, Traces, Metrics)
+2. OpenTelemetry para tracing distribuído
+3. ActivitySource e Activity para criar spans
+4. Pipeline Behaviors para cross-cutting concerns
+5. Correlation ID para rastreamento de requests
+6. Health Checks para Kubernetes readiness/liveness
+
+## 🐳 Docker Compose para Observability Stack
+
+```yaml
+version: '3.8'
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"  # UI
+      - "4317:4317"    # OTLP gRPC
+    
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+```
+
+## 🔗 Ferramentas MCP Utilizadas
+
+```
+mvp24h_cqrs_guide({ topic: "behaviors" })
+mvp24h_observability_setup({ component: "overview" })
+mvp24h_observability_setup({ component: "tracing" })
+mvp24h_observability_setup({ component: "metrics" })
+mvp24h_observability_setup({ component: "logging" })
+```
+
+---
+**Nível de Complexidade**: ⭐⭐⭐⭐ Avançado+

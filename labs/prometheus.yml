@@ -1,0 +1,44 @@
+# Prometheus Configuration for Labs Series
+# Scrape configurations
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files: []
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Labs API - Configure the port according to your lab
+  - job_name: 'labs-api'
+    scrape_interval: 5s
+    static_configs:
+      - targets: 
+          - 'host.docker.internal:5000'  # Lab default port
+          - 'host.docker.internal:5001'  # HTTPS
+    metrics_path: '/metrics'
+
+  # SQL Server Exporter (optional)
+  # - job_name: 'sqlserver'
+  #   static_configs:
+  #     - targets: ['sqlserver-exporter:9399']
+
+  # RabbitMQ
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: '/metrics'
+
+  # Redis
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
