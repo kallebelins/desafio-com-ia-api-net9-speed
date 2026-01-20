@@ -1,8 +1,5 @@
 # Docker Compose para Série de Laboratórios Mvp24Hours
 # Execute: docker-compose up -d
-
-version: '3.8'
-
 services:
   # ===========================================
   # BANCO DE DADOS
