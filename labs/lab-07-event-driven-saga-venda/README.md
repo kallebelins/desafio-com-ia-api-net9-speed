@@ -100,6 +100,43 @@ Lab07.Saga/
 <PackageReference Include="Mvp24Hours.Infrastructure.Data.EFCore" Version="9.*" />
 ```
 
+## 🔐 Credenciais e Configuração
+
+Este lab utiliza os serviços do `docker-compose.yml` principal localizado em `../docker-compose.yml`.
+
+### Serviços Utilizados
+
+| Serviço | Host | Porta | Credenciais |
+|---------|------|-------|-------------|
+| **SQL Server** | `sqlserver` | `1433` | Usuário: `sa`<br>Senha: `Lab@Mvp24Hours!` |
+| **RabbitMQ** | `rabbitmq` | `5672` (AMQP)<br>`15672` (Management UI) | Usuário: `guest`<br>Senha: `guest` |
+
+### String de Conexão
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=sqlserver;Database=Lab07_Vendas;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;"
+  },
+  "RabbitMQ": {
+    "HostName": "rabbitmq",
+    "Port": 5672,
+    "UserName": "guest",
+    "Password": "guest",
+    "VirtualHost": "/",
+    "Exchange": "lab07.exchange"
+  }
+}
+```
+
+### Executar Infraestrutura
+
+```bash
+# Na pasta labs/
+cd ..
+docker-compose up -d sqlserver rabbitmq
+```
+
 ## 🔄 Fluxo da Saga
 
 ```
@@ -264,26 +301,6 @@ mvp24h_cqrs_guide({ topic: "saga" })
 mvp24h_messaging_patterns({ pattern: "rabbitmq" })
 mvp24h_messaging_patterns({ pattern: "outbox" })
 mvp24h_infrastructure_guide({ topic: "pipeline" })
-```
-
-## 🐳 Docker Compose
-
-```yaml
-version: '3.8'
-services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      SA_PASSWORD: "YourStrong@Passw0rd"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
 ```
 
 ---

@@ -215,6 +215,57 @@ Lab10.FullStack/
 <PackageReference Include="AutoMapper" Version="12.*" />
 ```
 
+## 🔐 Credenciais e Configuração
+
+Este lab utiliza os serviços do `docker-compose.yml` principal localizado em `../docker-compose.yml`.
+
+### Serviços Utilizados
+
+| Serviço | Host | Porta | Credenciais |
+|---------|------|-------|-------------|
+| **SQL Server** | `sqlserver` | `1433` | Usuário: `sa`<br>Senha: `Lab@Mvp24Hours!` |
+| **RabbitMQ** | `rabbitmq` | `5672` (AMQP)<br>`15672` (Management UI) | Usuário: `guest`<br>Senha: `guest` |
+| **Redis** | `redis` | `6379` | Sem autenticação |
+| **Jaeger** | `jaeger` | `16686` (UI)<br>`4317` (OTLP gRPC)<br>`4318` (OTLP HTTP) | Sem autenticação |
+| **Prometheus** | `prometheus` | `9090` | Sem autenticação |
+| **Grafana** | `grafana` | `3000` | Usuário: `admin`<br>Senha: `admin` |
+| **Seq** | `seq` | `5341` (Ingestion)<br>`8081` (UI) | Sem autenticação |
+
+### String de Conexão
+
+```json
+{
+  "ConnectionStrings": {
+    "WriteDatabase": "Server=sqlserver;Database=Lab10_Write;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;",
+    "ReadDatabase": "Server=sqlserver;Database=Lab10_Read;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;",
+    "Redis": "redis:6379"
+  },
+  "RabbitMQ": {
+    "HostName": "rabbitmq",
+    "Port": 5672,
+    "UserName": "guest",
+    "Password": "guest",
+    "VirtualHost": "/",
+    "Exchange": "lab10.exchange"
+  },
+  "OpenTelemetry": {
+    "JaegerEndpoint": "http://jaeger:4317",
+    "SeqEndpoint": "http://seq:5341"
+  },
+  "Prometheus": {
+    "Endpoint": "http://prometheus:9090"
+  }
+}
+```
+
+### Executar Infraestrutura
+
+```bash
+# Na pasta labs/
+cd ..
+docker-compose up -d
+```
+
 ## 🔄 Fluxo Completo de uma Venda
 
 ```
@@ -255,70 +306,6 @@ Lab10.FullStack/
 │     NLog: Logs estruturados                                                 │
 │                                                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
-```
-
-## 🐳 Docker Compose Completo
-
-```yaml
-version: '3.8'
-services:
-  # Banco de dados
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      SA_PASSWORD: "YourStrong@Passw0rd"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserver_data:/var/opt/mssql
-
-  # Message Broker
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-
-  # Cache
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
-  # Tracing
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"  # UI
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
-
-  # Metrics
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  # Dashboards
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-
-volumes:
-  sqlserver_data:
-  rabbitmq_data:
-  redis_data:
-  grafana_data:
 ```
 
 ## ✅ Checklist de Implementação

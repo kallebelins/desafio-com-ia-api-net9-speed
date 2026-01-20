@@ -85,6 +85,43 @@ Lab05.CQRS.Observability/
 <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="8.*" />
 ```
 
+## 🔐 Credenciais e Configuração
+
+Este lab utiliza os serviços do `docker-compose.yml` principal localizado em `../docker-compose.yml`.
+
+### Serviços Utilizados
+
+| Serviço | Host | Porta | Credenciais |
+|---------|------|-------|-------------|
+| **SQL Server** | `sqlserver` | `1433` | Usuário: `sa`<br>Senha: `Lab@Mvp24Hours!` |
+| **Jaeger** | `jaeger` | `16686` (UI)<br>`4317` (OTLP gRPC)<br>`4318` (OTLP HTTP) | Sem autenticação |
+| **Prometheus** | `prometheus` | `9090` | Sem autenticação |
+| **Grafana** | `grafana` | `3000` | Usuário: `admin`<br>Senha: `admin` |
+
+### String de Conexão
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=sqlserver;Database=Lab05_Produtos;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;"
+  },
+  "OpenTelemetry": {
+    "JaegerEndpoint": "http://jaeger:4317"
+  },
+  "Prometheus": {
+    "Endpoint": "http://prometheus:9090"
+  }
+}
+```
+
+### Executar Infraestrutura
+
+```bash
+# Na pasta labs/
+cd ..
+docker-compose up -d sqlserver jaeger prometheus grafana
+```
+
 ## 📊 Observability Stack
 
 ```
@@ -188,25 +225,6 @@ public class ProdutoMetrics
 4. Pipeline Behaviors para cross-cutting concerns
 5. Correlation ID para rastreamento de requests
 6. Health Checks para Kubernetes readiness/liveness
-
-## 🐳 Docker Compose para Observability Stack
-
-```yaml
-version: '3.8'
-services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    ports:
-      - "16686:16686"  # UI
-      - "4317:4317"    # OTLP gRPC
-    
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-```
 
 ## 🔗 Ferramentas MCP Utilizadas
 

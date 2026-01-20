@@ -84,6 +84,43 @@ Lab04.EventDriven/
 <PackageReference Include="RabbitMQ.Client" Version="6.*" />
 ```
 
+## 🔐 Credenciais e Configuração
+
+Este lab utiliza os serviços do `docker-compose.yml` principal localizado em `../docker-compose.yml`.
+
+### Serviços Utilizados
+
+| Serviço | Host | Porta | Credenciais |
+|---------|------|-------|-------------|
+| **SQL Server** | `sqlserver` | `1433` | Usuário: `sa`<br>Senha: `Lab@Mvp24Hours!` |
+| **RabbitMQ** | `rabbitmq` | `5672` (AMQP)<br>`15672` (Management UI) | Usuário: `guest`<br>Senha: `guest` |
+
+### String de Conexão
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=sqlserver;Database=Lab04_Clientes;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;"
+  },
+  "RabbitMQ": {
+    "HostName": "rabbitmq",
+    "Port": 5672,
+    "UserName": "guest",
+    "Password": "guest",
+    "VirtualHost": "/",
+    "Exchange": "lab04.exchange"
+  }
+}
+```
+
+### Executar Infraestrutura
+
+```bash
+# Na pasta labs/
+cd ..
+docker-compose up -d sqlserver rabbitmq
+```
+
 ## 🚀 Fluxo de Eventos
 
 ```
@@ -130,21 +167,6 @@ public record ClienteCriadoIntegrationEvent : IIntegrationEvent
 }
 ```
 
-## ⚙️ Configuração RabbitMQ
-
-```json
-{
-  "RabbitMQ": {
-    "HostName": "localhost",
-    "Port": 5672,
-    "UserName": "guest",
-    "Password": "guest",
-    "VirtualHost": "/",
-    "Exchange": "lab04.exchange"
-  }
-}
-```
-
 ## ✅ Checklist de Implementação
 
 - [ ] Criar estrutura de projetos
@@ -166,22 +188,6 @@ public record ClienteCriadoIntegrationEvent : IIntegrationEvent
 4. Event Handlers e Consumers
 5. Hosted Services para processamento background
 6. Desacoplamento através de eventos
-
-## 🐳 Docker Compose para RabbitMQ
-
-```yaml
-version: '3.8'
-services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: lab04-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-```
 
 ## 🔗 Ferramentas MCP Utilizadas
 

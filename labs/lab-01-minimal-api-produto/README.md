@@ -57,6 +57,34 @@ Lab01.MinimalApi/
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
 ```
 
+## 🔐 Credenciais e Configuração
+
+Este lab utiliza os serviços do `docker-compose.yml` principal localizado em `../docker-compose.yml`.
+
+### Serviços Utilizados
+
+| Serviço | Host | Porta | Credenciais |
+|---------|------|-------|-------------|
+| **SQL Server** | `sqlserver` | `1433` | Usuário: `sa`<br>Senha: `Lab@Mvp24Hours!` |
+
+### String de Conexão
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=sqlserver;Database=Lab01_Produtos;User Id=sa;Password=Lab@Mvp24Hours!;TrustServerCertificate=True;"
+  }
+}
+```
+
+### Executar Infraestrutura
+
+```bash
+# Na pasta labs/
+cd ..
+docker-compose up -d sqlserver
+```
+
 ## 🚀 Endpoints da API
 
 | Método | Rota | Descrição |

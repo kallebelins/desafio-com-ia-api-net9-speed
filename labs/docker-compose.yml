@@ -1,5 +1,18 @@
 # Docker Compose para Série de Laboratórios Mvp24Hours
 # Execute: docker-compose up -d
+#
+# Serviços Disponíveis:
+# - SQL Server (Porta 1433) - Credenciais: sa / Lab@Mvp24Hours!
+# - RabbitMQ (Portas 5672, 15672) - Credenciais: guest / guest
+# - Redis (Porta 6379) - Sem autenticação
+# - Jaeger (Portas 16686, 4317, 4318) - Sem autenticação
+# - Prometheus (Porta 9090) - Sem autenticação
+# - Grafana (Porta 3000) - Credenciais: admin / admin
+# - Seq (Portas 5341, 8081) - Sem autenticação
+#
+# Para executar apenas serviços específicos:
+# docker-compose up -d sqlserver rabbitmq
+#
 services:
   # ===========================================
   # BANCO DE DADOS
