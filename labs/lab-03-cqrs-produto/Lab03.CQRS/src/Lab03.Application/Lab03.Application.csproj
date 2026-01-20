@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mvp24Hours.Core" Version="9.*" />
+    <PackageReference Include="Mvp24Hours.Infrastructure.Cqrs" Version="9.*" />
+    <PackageReference Include="FluentValidation" Version="12.*" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lab03.Core\Lab03.Core.csproj" />
+    <ProjectReference Include="..\Lab03.Infrastructure\Lab03.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
